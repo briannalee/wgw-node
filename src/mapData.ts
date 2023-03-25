@@ -12,8 +12,9 @@ export interface MapPoint {
   soilType?: string; // Type of soil at the point (optional)
   population?: number; // Population density at the point (optional)
   steepness?: number; // How steep is the point?
-  normalizedHeight?: number; // Normalized height value 0-1
-  overlayTemp?: RGBA; // Overlay color value for Temperature
+  normalizedHeight: number; // Normalized height value 0-1
+  overlayTemp: RGBA; // Overlay color value for Temperature
+  color: RGBA; // Tile color
 }
 
 export class MapData {

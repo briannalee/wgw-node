@@ -9,8 +9,8 @@ const app = express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const port = 3000;
-const height = 1000;
-const width = 1000;
+const height = 1200;
+const width = 1200;
 
 let loadCache: boolean = false;
 let mapData: MapData;
@@ -30,7 +30,7 @@ export async function start() {
         writeFileSync("./build/map.map",deflate(map));
       }
     // We are using our packages here
-    app.use( bodyParser.json({ limit: "3000mb" }) );       // to support JSON-encoded bodies
+    app.use( bodyParser.json({ limit: "500mb" }) );       // to support JSON-encoded bodies
     app.use(compression());
     app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true})); 

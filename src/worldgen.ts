@@ -1,6 +1,8 @@
 
 import alea from 'alea';
 import {createNoise2D} from 'simplex-noise';
+import { cliff, errorPink, RGBA, steepCliff } from './colors';
+import { heightColorMap } from './heightColorMap';
 import { MapData, MapPoint } from './mapData';
 import { temperatureToColor } from './temperatureToColor';
 
@@ -43,9 +45,6 @@ export function generateWorld(mapWidth: number, mapHeight: number): MapData {
 
       if (heightValue < minHeight) minHeight = heightValue;
       if (heightValue > maxHeight) maxHeight = heightValue;
-      const equator = mapHeight/2;
-      const temperature = Math.round(((40 - ((240/mapHeight*0.5) * Math.abs(y-equator))- (5* heightValue))+ Number.EPSILON) * 1000) / 1000;;
-      const tempColor = temperatureToColor(temperature);
 
       const mapPoint: MapPoint = {
         x: x,
@@ -53,8 +52,10 @@ export function generateWorld(mapWidth: number, mapHeight: number): MapData {
         height: heightValue,
         isWater: isWater,
         waterType: waterType,
-        temperature: temperature,
-        overlayTemp: tempColor,
+        color: [0,0,0,0],
+        normalizedHeight: 0,
+        temperature: 0,
+        overlayTemp: [0,0,0,0],
       };
 
       data[x][y] = mapPoint;
@@ -64,10 +65,23 @@ export function generateWorld(mapWidth: number, mapHeight: number): MapData {
 
   for (let x = 0; x < mapWidth; x++) {
     for (let y = 0; y < mapHeight; y++) {
-      
-      mapData.mapPoints[x][y].steepness = Math.round((calcSteepness(x,y,mapData) + Number.EPSILON) * 1000) / 1000;
-      const normalizedHeight = normalizeValue(mapData.mapPoints[x][y].height,mapData.minHeight, mapData.maxHeight);
-      mapData.mapPoints[x][y].normalizedHeight = Math.round((normalizedHeight + Number.EPSILON) * 1000) / 1000;
+      const steepness = Math.round((calcSteepness(x,y,mapData) + Number.EPSILON) * 1000) / 1000;
+      mapData.mapPoints[x][y].steepness = steepness;
+      let normalizedHeight = normalizeValue(mapData.mapPoints[x][y].height,mapData.minHeight, mapData.maxHeight);
+      normalizedHeight = Math.round((normalizedHeight + Number.EPSILON) * 1000) / 1000;
+      mapData.mapPoints[x][y].normalizedHeight = normalizedHeight;
+      const colorMap = heightColorMap.find((map) => normalizedHeight >= map.heightRange[0] && normalizedHeight < map.heightRange[1]);
+      mapData.mapPoints[x][y].color = colorMap ? colorMap.color : errorPink; // default to error color if no mapping found
+      const equator = mapHeight/2;
+      const temperature = Math.round(((40 - ((240/mapHeight*0.4) * Math.abs(y-equator))- (25* normalizedHeight))+ Number.EPSILON) * 1000) / 1000;;
+      const tempColor = temperatureToColor(temperature);
+      mapData.mapPoints[x][y].temperature = temperature;
+      mapData.mapPoints[x][y].overlayTemp = tempColor;
+      if (steepness >= 0.025 && !mapData.mapPoints[x][y].isWater) {
+        mapData.mapPoints[x][y].color = cliff;
+        if (steepness > 0.03)
+        mapData.mapPoints[x][y].color = steepCliff;
+      }
     }
   }
 
