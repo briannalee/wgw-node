@@ -3,7 +3,7 @@ import alea from 'alea';
 import {createNoise2D} from 'simplex-noise';
 import { cliff, errorPink, RGBA, steepCliff } from './colors';
 import { heightColorMap } from './heightColorMap';
-import { MapData, MapPoint } from './mapData';
+import { MapData, MapMetadata, MapPoint } from './mapData';
 import { temperatureToColor } from './temperatureToColor';
 
 // create a new random function based on the seed
@@ -29,6 +29,7 @@ export function interpolate(a : number, b : number, x : number) : number {
   var f = (1 - Math.cos(ft)) * 0.5;
   return a * (1 - f) + b * f;
 }
+
 
 export function generateWorld(mapWidth: number, mapHeight: number): MapData {
   let data: MapPoint[][] = Array(mapWidth);
@@ -61,13 +62,14 @@ export function generateWorld(mapWidth: number, mapHeight: number): MapData {
       data[x][y] = mapPoint;
     }
   }
-  let mapData: MapData = new MapData(data,maxHeight,minHeight,mapWidth,mapHeight);
+  let mapMetadata: MapMetadata = {height: mapHeight, width: mapWidth, maxHeight: maxHeight, minHeight: minHeight, name: "Test", description: "Test"};
+  let mapData: MapData = new MapData(data,mapMetadata);
 
   for (let x = 0; x < mapWidth; x++) {
     for (let y = 0; y < mapHeight; y++) {
       const steepness = Math.round((calcSteepness(x,y,mapData) + Number.EPSILON) * 1000) / 1000;
       mapData.mapPoints[x][y].steepness = steepness;
-      let normalizedHeight = normalizeValue(mapData.mapPoints[x][y].height,mapData.minHeight, mapData.maxHeight);
+      let normalizedHeight = normalizeValue(mapData.mapPoints[x][y].height,mapData.mapMetadata.minHeight, mapData.mapMetadata.maxHeight);
       normalizedHeight = Math.round((normalizedHeight + Number.EPSILON) * 1000) / 1000;
       mapData.mapPoints[x][y].normalizedHeight = normalizedHeight;
       const colorMap = heightColorMap.find((map) => normalizedHeight >= map.heightRange[0] && normalizedHeight < map.heightRange[1]);
@@ -96,9 +98,9 @@ function calcSteepness(x: number, y: number, mapData: MapData) {
   const elevation: number = mapData.mapPoints[x][y].height;
   let elevationChange: number = 0;
   if (y>0) elevationChange += Math.abs(elevation-mapData.mapPoints[x][y-1].height);
-  if (y<mapData.height-1) elevationChange += Math.abs(elevation-mapData.mapPoints[x][y+1].height);
+  if (y<mapData.mapMetadata.height-1) elevationChange += Math.abs(elevation-mapData.mapPoints[x][y+1].height);
   if (x>0) elevationChange += Math.abs(elevation-mapData.mapPoints[x-1][y].height);
-  if (x<mapData.width-1) elevationChange += Math.abs(elevation-mapData.mapPoints[x+1][y].height);
+  if (x<mapData.mapMetadata.width-1) elevationChange += Math.abs(elevation-mapData.mapPoints[x+1][y].height);
   const steepness = elevationChange / 4;
   return steepness;
 }

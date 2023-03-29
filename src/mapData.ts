@@ -17,18 +17,32 @@ export interface MapPoint {
   color: RGBA; // Tile color
 }
 
+export interface MapMetadata {
+  [x: string]: any;
+  name: string; // Name of the map
+  description: string; // Description of the map
+  height: number; // Height of the map
+  width: number; // Width of the map
+  maxHeight: number; // Maximum height of the map
+  minHeight: number; // Minimum height of the map
+
+  // numParts is the number of parts the MapPoints[][] array is divided into in the MapData class, 
+  // when saving/loading or sending to client.
+  numParts?: number; 
+}
+
+export interface MapPage {
+  mapPoints: MapPoint[][];
+  page: number;
+}
+
+
 export class MapData {
   mapPoints: MapPoint[][];
-  maxHeight: number;
-  minHeight: number;
-  width: number;
-  height: number;
+  mapMetadata: MapMetadata;
   
-  constructor(mapPoints: MapPoint[][], maxHeight: number, minHeight: number, width: number, height: number) {
-    this.mapPoints = mapPoints;
-    this.maxHeight = maxHeight;
-    this.minHeight = minHeight;
-    this.width = width;
-    this.height = height;
+  constructor(mapPoints: MapPoint[][], metadata: MapMetadata) {
+      this.mapMetadata = metadata;
+      this.mapPoints = mapPoints;
   }
 }
