@@ -1,13 +1,13 @@
 
 import alea from 'alea';
 import {createNoise2D} from 'simplex-noise';
-import { cliff, errorPink, RGBA, steepCliff } from './colors';
+import { ColorIndices, Colors } from "./colors";
 import { heightColorMap } from './heightColorMap';
 import { MapData, MapMetadata, MapPoint } from './mapData';
 import { temperatureToColor } from './temperatureToColor';
 
 // create a new random function based on the seed
-const prng = alea('seed');
+const prng = alea('seed234');
 const simplex = createNoise2D(prng);
 
 export function fractal(x : number, y: number, octaves: number, persistence: number) : number {
@@ -39,24 +39,23 @@ export function generateWorld(mapWidth: number, mapHeight: number): MapData {
   for (let x = 0; x < mapWidth; x++) {
     data[x] = Array(mapHeight);
     for (let y = 0; y < mapHeight; y++) {
-      const fractalValue = fractal(x /1000, y / 1000, 20, 0.5);
+      const fractalValue = fractal(x / mapWidth, y / mapHeight, 20, 0.5);
       const heightValue =  Math.round((interpolate(1, -4, fractalValue)*-1 + Number.EPSILON) * 1000) / 1000; 
       const isWater = heightValue < 0;
-      const waterType = isWater ? (Math.random() < 0.5 ? "salt" : "fresh") : undefined;
+      const waterType = isWater ? 0:undefined;
 
-      if (heightValue < minHeight) minHeight = heightValue;
+      if (heightValue < minHeight) {
+        minHeight = heightValue;
+        console.log("Min Height: " + minHeight + " at " + x + "," + y);
+      };
       if (heightValue > maxHeight) maxHeight = heightValue;
 
       const mapPoint: MapPoint = {
         x: x,
         y: y,
-        height: heightValue,
-        isWater: isWater,
-        waterType: waterType,
-        color: [0,0,0,0],
-        normalizedHeight: 0,
-        temperature: 0,
-        overlayTemp: [0,0,0,0],
+        h: heightValue,
+        w: isWater,
+        wT: waterType,
       };
 
       data[x][y] = mapPoint;
@@ -67,22 +66,29 @@ export function generateWorld(mapWidth: number, mapHeight: number): MapData {
 
   for (let x = 0; x < mapWidth; x++) {
     for (let y = 0; y < mapHeight; y++) {
+      const mapPoint = mapData.mapPoints[x][y]!;
+
       const steepness = Math.round((calcSteepness(x,y,mapData) + Number.EPSILON) * 1000) / 1000;
-      mapData.mapPoints[x][y].steepness = steepness;
-      let normalizedHeight = normalizeValue(mapData.mapPoints[x][y].height,mapData.mapMetadata.minHeight, mapData.mapMetadata.maxHeight);
+    
+      mapPoint.stp = steepness;
+      
+      let normalizedHeight = normalizeValue(mapPoint.h!,mapData.mapMetadata.minHeight, mapData.mapMetadata.maxHeight);
       normalizedHeight = Math.round((normalizedHeight + Number.EPSILON) * 1000) / 1000;
-      mapData.mapPoints[x][y].normalizedHeight = normalizedHeight;
-      const colorMap = heightColorMap.find((map) => normalizedHeight >= map.heightRange[0] && normalizedHeight < map.heightRange[1]);
-      mapData.mapPoints[x][y].color = colorMap ? colorMap.color : errorPink; // default to error color if no mapping found
+      mapPoint.nH = normalizedHeight;
+      
+      const colorMap = heightColorMap.find(
+          (map) => normalizedHeight >= map.heightRange[0] && normalizedHeight < map.heightRange[1]);
+      mapPoint.c = colorMap ? colorMap.color : 
+      ColorIndices.Error; // default to error color if no mapping found
+
       const equator = mapHeight/2;
-      const temperature = Math.round(((40 - ((240/mapHeight*0.4) * Math.abs(y-equator))- (25* normalizedHeight))+ Number.EPSILON) * 1000) / 1000;;
-      const tempColor = temperatureToColor(temperature);
-      mapData.mapPoints[x][y].temperature = temperature;
-      mapData.mapPoints[x][y].overlayTemp = tempColor;
-      if (steepness >= 0.025 && !mapData.mapPoints[x][y].isWater) {
-        mapData.mapPoints[x][y].color = cliff;
+      mapPoint.t = 
+      Math.round(((40 - ((240/mapHeight*0.4) * Math.abs(y-equator))- (25* normalizedHeight))+ Number.EPSILON) * 1000) / 1000;;
+
+      if (steepness >= 0.025 && !mapPoint.w) {
+        mapPoint.iS = true;
         if (steepness > 0.03)
-        mapData.mapPoints[x][y].color = steepCliff;
+        mapPoint.iC = true;
       }
     }
   }
@@ -95,12 +101,12 @@ function normalizeValue(value: number, minValue: number, maxValue: number): numb
 }
 
 function calcSteepness(x: number, y: number, mapData: MapData) {
-  const elevation: number = mapData.mapPoints[x][y].height;
+  const elevation: number = mapData.mapPoints[x][y].h!;
   let elevationChange: number = 0;
-  if (y>0) elevationChange += Math.abs(elevation-mapData.mapPoints[x][y-1].height);
-  if (y<mapData.mapMetadata.height-1) elevationChange += Math.abs(elevation-mapData.mapPoints[x][y+1].height);
-  if (x>0) elevationChange += Math.abs(elevation-mapData.mapPoints[x-1][y].height);
-  if (x<mapData.mapMetadata.width-1) elevationChange += Math.abs(elevation-mapData.mapPoints[x+1][y].height);
+  if (y>0) elevationChange += Math.abs(elevation-mapData.mapPoints[x][y-1].h!);
+  if (y<mapData.mapMetadata.height-1) elevationChange += Math.abs(elevation-mapData.mapPoints[x][y+1].h!);
+  if (x>0) elevationChange += Math.abs(elevation-mapData.mapPoints[x-1][y].h!);
+  if (x<mapData.mapMetadata.width-1) elevationChange += Math.abs(elevation-mapData.mapPoints[x+1][y].h!);
   const steepness = elevationChange / 4;
   return steepness;
 }

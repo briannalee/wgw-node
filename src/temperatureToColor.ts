@@ -1,6 +1,6 @@
-import { RGBA } from "./colors";
+import { Colors, RGBToDecimal } from "./colors";
 
-export function temperatureToColor(temperature: number): RGBA {
+export function temperatureToColor(temperature: number): number {
   //temperature = 
   let temperatureMin = 40;
   let temperatureMax = -20;
@@ -49,5 +49,5 @@ export function temperatureToColor(temperature: number): RGBA {
   b = Math.round((b + m) * 255);
 
   
-  return [r, g, b, 100]; // Return the RGBA color tuple
+  return RGBToDecimal(r,g,b);
 }
