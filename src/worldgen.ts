@@ -1,7 +1,7 @@
 
 import alea from 'alea';
 import {createNoise2D} from 'simplex-noise';
-import { ColorIndices, Colors } from "./colors";
+import { Color, Colors } from "./colors";
 import { heightColorMap } from './heightColorMap';
 import { MapData, MapMetadata, MapPoint } from './mapData';
 import { temperatureToColor } from './temperatureToColor';
@@ -79,7 +79,7 @@ export function generateWorld(mapWidth: number, mapHeight: number): MapData {
       const colorMap = heightColorMap.find(
           (map) => normalizedHeight >= map.heightRange[0] && normalizedHeight < map.heightRange[1]);
       mapPoint.c = colorMap ? colorMap.color : 
-      ColorIndices.Error; // default to error color if no mapping found
+      Color.Error; // default to error color if no mapping found
 
       const equator = mapHeight/2;
       mapPoint.t = 

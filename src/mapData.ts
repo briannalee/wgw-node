@@ -1,4 +1,4 @@
-import { ColorIndices, Colors } from "./colors";
+import { Color, Colors } from "./colors";
 
 export interface MapPoint {
   x: number; // X-coordinate of the point
@@ -13,7 +13,7 @@ export interface MapPoint {
   pop?: number; // Population density at the point (optional)
   stp?: number; // How steep is the point?
   nH?: number; // Normalized height value 0-1
-  c?: ColorIndices; // Index of the color in the enum Colors
+  c?: Color; // Index of the color in the enum Colors
   iS?: boolean; // Whether the point is steep
   iC?: boolean; // Whether the point is a cliff
 }

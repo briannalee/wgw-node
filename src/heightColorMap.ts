@@ -1,45 +1,45 @@
-import {ColorIndices, Colors} from "./colors";
+import {Color, Colors} from "./colors";
 
 interface HeightColorMap {
   heightRange: [number, number];
-  color: ColorIndices;
+  color: Color;
   label: string;
 }
 
 export const heightColorMap: HeightColorMap[] = [
   {
     heightRange: [-Infinity, 0.03],
-    color: ColorIndices.DeepSea,
+    color: Color.DeepSea,
     label: "deep water",
   },
   {
     heightRange: [0.03, 0.1],
-    color: ColorIndices.ShallowSea,
+    color: Color.ShallowSea,
     label: "water",
   },
   {
     heightRange: [0.1, 0.12],
-    color: ColorIndices.Coastal,
+    color: Color.Coastal,
     label: "coastal",
   },
   {
     heightRange: [0.12, 0.3],
-    color: ColorIndices.Lowlands,
+    color: Color.Lowlands,
     label: "lowlands",
   },
   {
     heightRange: [0.3, 0.52],
-    color: ColorIndices.Hills,
+    color: Color.Hills,
     label: "hills",
   },
   {
     heightRange: [0.52, 0.61],
-    color: ColorIndices.Highlands,
+    color: Color.Highlands,
     label: "highlands",
   },
   {
     heightRange: [0.61, Infinity],
-    color: ColorIndices.Peaks,
+    color: Color.Peaks,
     label: "mountains",
   },
 ];
